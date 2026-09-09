@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>사회쌤 모둠메이커</title>
+<style>
+*{box-sizing:border-box} :root{--p:#6557e8;--bg:#f5f3ff;--ink:#17151f;--muted:#6d6878;--card:#fff;--line:#e7e3f1}
+body{margin:0;font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif;background:var(--bg);color:var(--ink)}
+button,input,textarea,select{font:inherit}button{cursor:pointer;border:0}
+.app{max-width:1180px;margin:auto;padding:24px 18px 50px}
+.top{display:flex;justify-content:space-between;gap:20px;align-items:flex-start}
+.logo{font-size:13px;font-weight:900;background:#17151f;color:white;padding:7px 12px;border-radius:999px;display:inline-block}
+h1{margin:12px 0 6px;font-size:clamp(30px,5vw,48px);letter-spacing:-2px}.sub{margin:0;color:var(--muted)}
+.meme{background:#ffe66d;border:3px solid #17151f;padding:12px 16px;border-radius:16px;font-weight:950;box-shadow:5px 5px #17151f;transform:rotate(2deg)}
+.tabs{display:flex;gap:8px;margin:24px 0 14px;overflow:auto}.tab{padding:11px 15px;border-radius:12px;background:#eae7f7;font-weight:850;white-space:nowrap}.tab.active{background:var(--p);color:#fff}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:20px;box-shadow:0 10px 30px #30285b10}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}.full{grid-column:1/-1}
+label{display:block;font-weight:900;margin:0 0 8px}textarea,input,select{width:100%;border:2px solid var(--line);border-radius:13px;padding:12px;outline:0;background:#fff}textarea{min-height:220px;resize:vertical}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.btns{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
+.btn{padding:12px 15px;border-radius:13px;font-weight:900}.primary{background:var(--p);color:#fff}.dark{background:#17151f;color:#fff}.soft{background:#ece9fa}.danger{background:#ffe7e7;color:#a22}
+.small{font-size:12px;color:var(--muted);margin-top:7px}.hidden{display:none!important}
+.result{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-top:15px}
+.group{background:#fff;border:1px solid var(--line);border-radius:20px;padding:15px;box-shadow:0 8px 25px #30285b0c;min-height:160px}
+.gtitle{font-size:20px;font-weight:950;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.count{font-size:12px;background:#f0eef9;padding:5px 8px;border-radius:999px}
+.student{background:#f8f7fc;border-radius:11px;padding:9px;margin:7px 0;display:flex;justify-content:space-between;align-items:center;font-weight:750}
+.student[draggable=true]{cursor:grab}.move{font-size:11px;color:#777}
+.notice{text-align:center;padding:35px;border:2px dashed #d9d4e8;border-radius:18px;color:var(--muted);grid-column:1/-1}
+.toast{position:fixed;bottom:20px;left:50%;transform:translate(-50%,30px);background:#17151f;color:#fff;padding:12px 17px;border-radius:999px;font-weight:850;opacity:0;transition:.2s;z-index:50}.toast.on{opacity:1;transform:translate(-50%,0)}
+.modal{position:fixed;inset:0;background:#111a;display:flex;align-items:center;justify-content:center;padding:18px;z-index:40}.modalbox{background:#fff;border-radius:24px;padding:22px;max-width:650px;width:100%;max-height:90vh;overflow:auto}.classitem{display:flex;justify-content:space-between;align-items:center;padding:12px;background:#f7f5fb;border-radius:12px;margin:7px 0}
+.mini{padding:8px 10px;border-radius:9px;font-weight:800}
+@media(max-width:760px){.grid{grid-template-columns:1fr}.full{grid-column:auto}.top{display:block}.meme{display:none}.row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top">
+ <div><span class="logo">SOCIAL • TEACHER TOOL</span><h1>사회쌤 모둠메이커 🎲</h1><p class="sub">랜덤으로 재미있게, 마지막 결정은 선생님이.</p></div>
+ <div class="meme">오히려 좋아 😎</div>
+</header>
+
+<nav class="tabs">
+ <button class="tab active" data-tab="make">🎲 모둠 만들기</button>
+ <button class="tab" data-tab="classes">👥 학급 관리</button>
+ <button class="tab" data-tab="backup">💾 백업·복원</button>
+</nav>
+
+<section id="make">
+ <div class="grid">
+  <div class="panel">
+   <label>학급 선택</label>
+   <div class="row"><select id="classSelect"><option value="">직접 입력</option></select><button class="btn soft" onclick="loadClass()">학급 불러오기</button></div>
+   <div style="margin-top:15px"><label>학생 명단</label><textarea id="names" placeholder="한 줄에 한 명씩 입력하세요&#10;&#10;김민준&#10;이서연&#10;박지호&#10;최하은"></textarea><div class="small">줄바꿈 또는 쉼표로 구분 · 같은 이름은 자동으로 한 번만 사용</div></div>
+  </div>
+  <div class="panel">
+   <div class="row">
+    <div><label>모둠 수</label><select id="groupCount"></select></div>
+    <div><label>모둠 이름</label><select id="theme"><option value="meme">밈 스타일</option><option value="social">사회탐구</option><option value="world">세계지리</option><option value="history">역사</option></select></div>
+   </div>
+   <div class="btns">
+    <button class="btn primary" onclick="makeGroups()">🎲 모둠 뽑기</button>
+    <button class="btn dark" onclick="showPresentation()">📺 학생 공개</button>
+    <button class="btn soft" onclick="saveCurrent()">💾 학급으로 저장</button>
+   </div>
+   <div class="small">학생 수보다 많은 모둠은 만들 수 없습니다. 인원은 최대한 균등하게 배치합니다.</div>
+  </div>
+  <div class="panel full">
+   <label>현재 모둠</label>
+   <div id="result"><div class="notice">학생 명단을 입력하고 <b>모둠 뽑기</b>를 눌러주세요.<br>결과가 나온 뒤 학생 카드를 드래그해 다른 모둠으로 옮길 수 있습니다.</div></div>
+  </div>
+ </div>
+</section>
+
+<section id="classes" class="hidden">
+ <div class="panel"><h2>👥 저장된 학급</h2><p class="sub">명단은 이 브라우저의 로컬 저장소에만 저장됩니다.</p><div id="classList"></div></div>
+</section>
+
+<section id="backup" class="hidden">
+ <div class="panel"><h2>💾 백업·복원</h2><p>컴퓨터를 바꾸거나 브라우저 데이터를 지우기 전에 백업 파일을 만들어 두세요.</p>
+ <div class="btns"><button class="btn primary" onclick="exportData()">📥 백업 파일 저장</button><button class="btn soft" onclick="document.getElementById('file').click()">📤 백업 파일 불러오기</button><input id="file" class="hidden" type="file" accept=".json" onchange="importData(event)"></div></div>
+</section>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const KEY="socialGroupMakerV2";
+const themes={
+ meme:["폼 좋다","오히려 좋아","가보자고","대화가 된다","이게 되네","레전드","진짜임?","갑자기?","ㄹㅇ","GOAT"],
+ social:["세계시민","사회탐구","공동체","문화교류","민주시민","미래사회","지리탐험","사회이슈","경제생활","글로벌"],
+ world:["아시아","유럽","아프리카","아메리카","오세아니아","극지방","세계여행","지구촌","대륙횡단","세계지도"],
+ history:["고조선","삼국","고려","조선","근현대","세계사","문화유산","역사탐험","시간여행","문명"]
+};
+const colors=["#6557e8","#00a884","#0984e3","#e17055","#e1a900","#e84393","#00a8a8","#8b7cf6","#16a085","#d35400"];
+let groups=[];
+
+const $=id=>document.getElementById(id);
+function db(){return JSON.parse(localStorage.getItem(KEY)||'{"classes":{}}')}
+function saveDB(d){localStorage.setItem(KEY,JSON.stringify(d))}
+function names(){return [...new Set($("names").value.split(/[\\n,]+/).map(x=>x.trim()).filter(Boolean))]}
+function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function setup(){
+ for(let i=2;i<=10;i++) $("groupCount").innerHTML+=`<option value="${i}" ${i===4?"selected":""}>${i}모둠</option>`;
+ refreshClasses(); refreshList();
+ document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");["make","classes","backup"].forEach(x=>$(x).classList.toggle("hidden",x!==b.dataset.tab));if(b.dataset.tab==="classes")refreshList()});
+}
+function makeGroups(){
+ let a=names(), n=+$("groupCount").value;
+ if(!a.length)return alert("학생 이름을 먼저 입력해주세요.");
+ if(n>a.length)return alert("모둠 수가 학생 수보다 많습니다.");
+ shuffle(a); groups=Array.from({length:n},()=>[]);
+ // 균등 분배: 학생 수 차이가 1을 넘지 않음
+ a.forEach((s,i)=>groups[i%n].push(s));
+ render(); toast("🎲 모둠 완성! 폼 좋다.");
+}
+function render(){
+ let labels=themes[$("theme").value], r=$("result");r.innerHTML="";
+ groups.forEach((g,i)=>{
+  let card=document.createElement("div");card.className="group";card.dataset.i=i;card.style.borderTop=`6px solid ${colors[i%colors.length]}`;
+  card.ondragover=e=>e.preventDefault();
+  card.ondrop=e=>{let from=+e.dataTransfer.getData("from"),idx=+e.dataTransfer.getData("idx");if(from===i)return;let s=groups[from].splice(idx,1)[0];groups[i].push(s);render();toast("이동 완료 ✨")};
+  card.innerHTML=`<div class="gtitle"><span>${i+1}모둠 · ${labels[i%labels.length]}</span><span class="count">${g.length}명</span></div>`;
+  g.forEach((s,j)=>{let d=document.createElement("div");d.className="student";d.draggable=true;d.ondragstart=e=>{e.dataTransfer.setData("from",i);e.dataTransfer.setData("idx",j)};d.innerHTML=`<span>${escapeHTML(s)}</span><span class="move">↕ 이동</span>`;card.appendChild(d)});
+  r.appendChild(card);
+ });
+}
+function escapeHTML(s){return s.replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function saveCurrent(){
+ let a=names();if(!a.length)return alert("학생 명단이 없습니다.");
+ let name=prompt("저장할 학급 이름을 입력하세요.",$("classSelect").value||"1학년 1반");if(!name)return;
+ let d=db();d.classes[name]=a;saveDB(d);refreshClasses();$("classSelect").value=name;toast("💾 "+name+" 저장 완료");
+}
+function refreshClasses(){let d=db(),s=$("classSelect");s.innerHTML='<option value="">직접 입력</option>';Object.keys(d.classes).sort().forEach(k=>s.innerHTML+=`<option>${escapeHTML(k)}</option>`)}
+function loadClass(){let k=$("classSelect").value;if(!k)return;let d=db();$("names").value=d.classes[k].join("\\n");toast("👥 "+k+" 불러오기 완료")}
+function refreshList(){let d=db(),box=$("classList");box.innerHTML="";let ks=Object.keys(d.classes).sort();if(!ks.length){box.innerHTML='<p class="small">저장된 학급이 없습니다.</p>';return}ks.forEach(k=>{let div=document.createElement("div");div.className="classitem";div.innerHTML=`<div><b>${escapeHTML(k)}</b><div class="small">${d.classes[k].length}명</div></div><button class="mini danger" onclick="deleteClass(${JSON.stringify(k)})">삭제</button>`;box.appendChild(div)})}
+function deleteClass(k){if(confirm(k+"을(를) 삭제할까요?")){let d=db();delete d.classes[k];saveDB(d);refreshClasses();refreshList();toast("삭제했습니다.")}}
+function saveState(){let d=db();d.lastGroups=groups;saveDB(d)}
+function exportData(){let d=db();let blob=new Blob([JSON.stringify(d,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="사회쌤_모둠메이커_백업.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
+function importData(e){let f=e.target.files[0];if(!f)return;let rd=new FileReader();rd.onload=()=>{try{let d=JSON.parse(rd.result);if(!d.classes)throw 0;saveDB(d);refreshClasses();refreshList();toast("📤 복원 완료")}catch{alert("올바른 백업 파일이 아닙니다.")}};rd.readAsText(f);e.target.value=""}
+function toast(t){let x=$("toast");x.textContent=t;x.classList.add("on");setTimeout(()=>x.classList.remove("on"),1500)}
+function showPresentation(){
+ if(!groups.length)return alert("먼저 모둠을 만들어주세요.");
+ let w=window.open("","_blank");if(!w)return alert("팝업 차단을 해제해주세요.");
+ let labels=themes[$("theme").value];
+ w.document.write(`<style>*{box-sizing:border-box}body{margin:0;background:#f7f4ff;color:#17151f;font-family:system-ui,'Noto Sans KR',sans-serif}main{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:30px}.screen{max-width:1000px;width:100%}.intro{font-size:clamp(28px,6vw,60px);font-weight:950;line-height:1.15}.sub{color:#6d6878;font-weight:700;margin:15px}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:25px}.card{background:#fff;border-radius:22px;padding:20px;box-shadow:0 12px 30px #322b6515;border-top:8px solid #6557e8}.name{font-size:26px;font-weight:950;margin-bottom:12px}.student{font-size:20px;padding:7px}</style><main><div class="screen"><div class="intro" id="t">자… 잠깐만.</div><div class="sub" id="s">운명의 모둠을 결정합니다 😎</div><div class="cards" id="c" style="display:none">${groups.map((g,i)=>`<div class="card" style="border-color:${colors[i%colors.length]}"><div class="name">${i+1}모둠 · ${labels[i%labels.length]}</div>${g.map(x=>`<div class="student">${escapeHTML(x)}</div>`).join("")}</div>`).join("")}</div></div></main>`);
+ setTimeout(()=>{w.document.getElementById("t").textContent="3"},700);setTimeout(()=>{w.document.getElementById("t").textContent="2"},1400);setTimeout(()=>{w.document.getElementById("t").textContent="1"},2100);setTimeout(()=>{w.document.getElementById("t").textContent="오히려 좋아 😎";w.document.getElementById("s").textContent="오늘의 모둠이 결정되었습니다!";w.document.getElementById("c").style.display="grid"},2800);
+}
+$("theme").addEventListener("change",()=>{if(groups.length)render()});
+$("names").addEventListener("input",()=>{});
+window.addEventListener("beforeunload",()=>{if(groups.length)saveState()});
+setup();
+</script>
+</body>
+</html>
